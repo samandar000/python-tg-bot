@@ -1,22 +1,42 @@
-import telegram
 import os
-import time
-
+from telegram.ext import Updater,MessageHandler,filters,CallbackContext,CommandHandler,BaseFilter
+from telegram import Update,ReplyKeyboardMarkup
+import requests
 
 TOKEN = os.environ['TOKEN']
 
-bot = telegram.Bot(token=TOKEN)
+def start(update: Update,context:CallbackContext):
+    keyboard = [['dog'],['cat']]
+    update.message.reply_text('Welcome to our bot',reply_markup=ReplyKeyboardMarkup(keyboard=keyboard))
 
-last_update = bot.getUpdates()[-1]
+def cat(update: Update, context: CallbackContext):
+    response = requests.get('https://aws.random.cat/meow')
+    url = response.json()['file']
 
-last_update_id = last_update.update_id
+    update.message.reply_photo(url)
 
-curr_update = bot.getUpdates()[-1]
-        
-curr_update_id = last_update.update_id
+def dog(update: Update, context: CallbackContext):
+    response = requests.get('https://random.dog/woof.json')
+    url = response.json()['url']
 
-stiker = curr_update.message.text
-# photo = last_update.message.sticker.file_id
+    update.message.reply_photo(url)
 
 
-print(stiker)
+def main():
+
+    updater = Updater(TOKEN)
+
+    dispatcher = updater.dispatcher
+
+    dispatcher.add_handler(handler=CommandHandler('start', callback=start))
+
+    
+    dispatcher.add_handler(handler=MessageHandler(filters=filters.Filters.text('dog'),callback=dog))
+    dispatcher.add_handler(handler=MessageHandler(filters=filters.Filters.text('cat'),callback=cat))
+
+    
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == "__main__":    
+    main()
