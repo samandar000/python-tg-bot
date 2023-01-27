@@ -1,1 +1,4 @@
-{"LIKE": 0, "DISLIKE": 0}
+{
+    "likes": 0,
+    "dislikes": 3
+}
